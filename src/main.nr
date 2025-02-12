@@ -42,5 +42,7 @@ contract BrokenNoteDemo {
         //...
     }
 
-    
+    pub unconstrained fn check_for_note(owner: AztecAddress) -> MyNoteNote {
+        storage.my_note_map.at(owner).view_note()
+    }
 }

@@ -1,6 +1,6 @@
-use crate::BrokenNoteDemo;
+use crate::{BrokenNoteDemo, my_note::MyNoteNote};
 use aztec::{prelude::AztecAddress, test::helpers::{cheatcodes, test_environment::TestEnvironment}};
-use aztec::oracle::random::random;
+use aztec::oracle::{random::random, execution::get_contract_address};
 
 pub struct TestAccounts {
     deployer: AztecAddress,
@@ -84,4 +84,20 @@ unconstrained fn test_broken_note() {
 
     // works fine
     call_function(env, contracts.broken_note, accounts.alice);
+}
+
+#[test]
+unconstrained fn check_for_note() {
+    let (env, accounts, contracts) = setup();
+    let data = unsafe { random() };
+    // create note
+    call_make_note(env, contracts.broken_note, accounts.alice, data);
+    // view note
+    let current_contract = get_contract_address();
+    cheatcodes::set_contract_address(contracts.broken_note);
+    env.impersonate(accounts.alice);
+    let note: MyNoteNote = BrokenNoteDemo::check_for_note(accounts.alice);
+    cheatcodes::set_contract_address(current_contract);
+    assert_eq(note.owner, accounts.alice);
+    assert_eq(note.data, data);
 }
